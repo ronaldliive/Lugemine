@@ -289,6 +289,8 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                     <button
                         onClick={() => {
                             setMistakes(prev => [...prev, currentStepText + " (Manuaalne)"]);
+                            setRecognizedIndices(new Set()); // Reset green words
+                            setErrorIndex(null); // Reset red words
                             resetTranscript();
                         }}
                         className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-100 text-slate-400 hover:text-slate-600 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
