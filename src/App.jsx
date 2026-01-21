@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { PyramidView } from './components/PyramidView';
+import { SettingsModal } from './components/SettingsModal';
+import { StatsHistoryView } from './components/StatsHistoryView';
 import { exercises } from './data/exercises';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Settings, Trophy } from 'lucide-react';
 
 function App() {
   const [currentExercise, setCurrentExercise] = useState(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [difficulty, setDifficulty] = useState('rabbit'); // snail, rabbit, tiger
 
   if (currentExercise) {
     return (
@@ -13,16 +18,53 @@ function App() {
           exercise={currentExercise}
           onBack={() => setCurrentExercise(null)}
           onComplete={() => {
-            alert("Tubli töö! Harjutus tehtud.");
+            // Alert removed, ResultsView handles feedback now via state inside PyramidView
+            // But we might want a simple fallback or nothing if PyramidView handles "Finished" state internally?
+            // PyramidView switches to ResultsView internally, so onComplete here is just for "Exiting" the whole view?
+            // Actually, in PyramidView: onComplete && onComplete() is called by the ResultsView's "Menüü" button NOW?
+            // No, wait.
+            // In PyramidView, when finished, it shows ResultsView. ResultsView has "Menüü" which calls onHome (passed as onBack).
+            // So onBack here handles resetting currentExercise. Correct.
+            // onComplete prop might not be needed strictly anymore for the alert, but kept for safety.
             setCurrentExercise(null);
           }}
+          difficulty={difficulty}
         />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFDF5] p-6 flex flex-col items-center">
+    <div className="min-h-screen bg-[#FFFDF5] p-6 flex flex-col items-center relative">
+      <div className="absolute top-6 left-6 flex gap-2">
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="p-3 bg-white rounded-full shadow-sm text-slate-400 hover:text-slate-600 transition-colors border border-slate-100"
+          aria-label="Seaded"
+        >
+          <Settings size={24} />
+        </button>
+        <button
+          onClick={() => setIsHistoryOpen(true)}
+          className="p-3 bg-white rounded-full shadow-sm text-yellow-500 hover:text-yellow-600 transition-colors border border-slate-100"
+          aria-label="Ajalugu"
+        >
+          <Trophy size={24} />
+        </button>
+      </div>
+
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        difficulty={difficulty}
+        setDifficulty={setDifficulty}
+      />
+
+      <StatsHistoryView
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
+
       <header className="mb-12 mt-8 text-center">
         <div className="inline-block p-4 bg-green-100 rounded-full mb-4 text-green-600">
           <BookOpen size={48} />
@@ -31,7 +73,7 @@ function App() {
         <p className="text-slate-500">Vali harjutus ja hakka lugema!</p>
       </header>
 
-      <div className="w-full max-w-md space-y-4">
+      <div className="w-full max-w-md space-y-4 pb-12">
         {exercises.map(exercise => (
           <button
             key={exercise.id}
