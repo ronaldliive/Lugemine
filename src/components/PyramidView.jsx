@@ -159,7 +159,7 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
             </div>
 
             {/* Pyramid Area - RESPONSIVE TWEAKS */}
-            <div className="flex-1 flex flex-col items-center justify-center space-y-6 overflow-y-auto">
+            <div className="flex-1 flex flex-col items-center justify-center space-y-4 overflow-y-auto w-full py-4">
                 {exercise.steps.map((step, index) => {
                     const isActive = index === currentStepIndex;
                     const isPast = index < currentStepIndex;
@@ -170,11 +170,11 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                     return (
                         <div
                             key={index}
-                            className={`text-center transition-all duration-500 ease-in-out px-4 w-full max-w-2xl
-                    ${isActive ? 'scale-100 opacity-100 my-4' : 'scale-95 opacity-50 hidden sm:block'}
+                            className={`text-center transition-all duration-500 ease-in-out px-2 w-full max-w-4xl
+                    ${isActive ? 'scale-100 opacity-100 my-2' : 'scale-90 opacity-40 hidden sm:block'}
                   `}
                         >
-                            <div className="inline-block leading-relaxed tracking-wide">
+                            <div className={`inline-block leading-normal tracking-wide transition-all duration-300 ${isActive ? 'py-4' : ''}`}>
                                 {words.map((word, wIndex) => {
                                     // Logic for coloring:
                                     // Past steps: All green
@@ -188,10 +188,10 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                                         <span
                                             key={wIndex}
                                             className={`
-                                                inline-block mr-2 last:mr-0 mb-1
+                                                inline-block mr-3 last:mr-0 mb-2
                                                 transition-colors duration-300
-                                                /* Responsive Font Sizes - Fluid */
-                                                text-[clamp(1.5rem,5vw,3rem)]
+                                                /* Responsive Font Sizes - Much Larger */
+                                                text-[clamp(2.5rem,8vw,5rem)]
                                                 ${isGreen ? 'text-green-600' : ''}
                                                 ${!isGreen && isActive ? 'text-slate-800' : ''}
                                                 ${!isActive && !isPast ? 'text-slate-400' : ''}
@@ -207,9 +207,9 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                 })}
             </div>
 
-            {/* Controls Container */}
-            <div className="mt-8 mb-4 w-full max-w-lg mx-auto">
-                <div className="bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center gap-4 border border-slate-100">
+            {/* Controls Container - Fixed visual hierarchy */}
+            <div className="mt-4 mb-2 w-full max-w-lg mx-auto pb-safe">
+                <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg p-6 flex flex-col items-center gap-4 border border-slate-100 ring-4 ring-slate-50/50">
 
                     <Timer
                         duration={duration}
@@ -219,13 +219,13 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                     />
                 </div>
 
-                <div className="flex gap-6 items-center justify-center mt-4">
+                <div className="flex gap-6 items-center justify-center -mt-6 relative z-10">
                     <button
                         onClick={() => {
                             setMistakes(prev => [...prev, currentStepText + " (Manuaalne)"]);
                             resetTranscript();
                         }}
-                        className="p-4 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
+                        className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-100 text-slate-400 hover:text-slate-600 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
                         aria-label="Proovi uuesti"
                     >
                         <RefreshCw size={24} />
@@ -233,11 +233,13 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
 
                     <button
                         onClick={isListening ? stopListening : startListening}
-                        className={`p-8 rounded-full shadow-lg transform transition-all active:scale-95
-                        ${isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-green-500 text-white'}
+                        className={`w-24 h-24 rounded-full shadow-xl transform transition-all active:scale-95 flex items-center justify-center border-4 border-white
+                        ${isListening
+                                ? 'bg-red-500 text-white shadow-red-200 animate-pulse'
+                                : 'bg-green-500 text-white shadow-green-200 hover:bg-green-600 hover:scale-105'}
                     `}
                     >
-                        {isListening ? <MicOff size={40} /> : <Mic size={40} />}
+                        {isListening ? <MicOff size={48} /> : <Mic size={48} />}
                     </button>
 
                     {/* Manual Next */}
@@ -247,7 +249,7 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                             resetTranscript();
                             setRecognizedIndices(new Set()); // Ensure clean manual reset
                         }}
-                        className="p-4 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
+                        className="w-14 h-14 rounded-full bg-white shadow-md border border-slate-100 text-slate-400 hover:text-slate-600 hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
                         aria-label="Järgmine"
                     >
                         <ChevronRight size={24} />
