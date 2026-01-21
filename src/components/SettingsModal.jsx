@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Trophy, Zap, Turtle, Rabbit } from 'lucide-react';
 
-export const SettingsModal = ({ isOpen, onClose, difficulty, setDifficulty }) => {
+export const SettingsModal = ({ isOpen, onClose, difficulty, setDifficulty, fontType, setFontType }) => {
     if (!isOpen) return null;
 
     const levels = [
@@ -18,6 +18,32 @@ export const SettingsModal = ({ isOpen, onClose, difficulty, setDifficulty }) =>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
                         <X size={24} className="text-slate-400" />
                     </button>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                    <p className="text-slate-500 mb-2 font-medium">Vali kirjastiil:</p>
+                    <div className="grid grid-cols-2 gap-3">
+                        <button
+                            onClick={() => setFontType('hand')}
+                            className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2
+                                ${fontType === 'hand'
+                                    ? 'border-green-500 bg-green-50 text-slate-800'
+                                    : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+                                }`}
+                        >
+                            <span className="text-2xl font-hand">Aa (Kirjalik)</span>
+                        </button>
+                        <button
+                            onClick={() => setFontType('sans')}
+                            className={`p-4 rounded-xl border-2 transition-all flex flex-col items-center gap-2
+                                ${fontType === 'sans'
+                                    ? 'border-blue-500 bg-blue-50 text-slate-800'
+                                    : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'
+                                }`}
+                        >
+                            <span className="text-2xl font-sans">Aa (Trüki)</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div className="space-y-3">

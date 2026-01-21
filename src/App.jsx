@@ -10,6 +10,7 @@ function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [difficulty, setDifficulty] = useState('rabbit'); // snail, rabbit, tiger
+  const [fontType, setFontType] = useState('hand'); // hand, sans
 
   if (currentExercise) {
     return (
@@ -29,6 +30,7 @@ function App() {
             setCurrentExercise(null);
           }}
           difficulty={difficulty}
+          fontType={fontType}
         />
       </div>
     );
@@ -58,6 +60,8 @@ function App() {
         onClose={() => setIsSettingsOpen(false)}
         difficulty={difficulty}
         setDifficulty={setDifficulty}
+        fontType={fontType}
+        setFontType={setFontType}
       />
 
       <StatsHistoryView

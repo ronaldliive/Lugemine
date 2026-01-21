@@ -43,7 +43,10 @@ const Timer = ({ duration, isRunning, onExpire, difficulty }) => {
     );
 };
 
-export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit' }) => {
+// Helper to normalize
+const normalize = (text) => text.toLowerCase().replace(/[.,?!]/g, '');
+
+export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit', fontType = 'hand' }) => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
 
@@ -52,15 +55,8 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
     const [endTime, setEndTime] = useState(null);
     const [mistakes, setMistakes] = useState([]);
 
-    // We can't easily get *incorrect* words from our current hook because it only returns the accumulated transcript.
-    // However, we can infer "struggle" if the transcript gets long without matching the target.
-    // Ideally, we'd listen to 'onresult' events for finals that DON'T match.
-    // For now, let's keep mistakes simple: maybe just count timeouts or "Retry" clicks?
-    // OR: We can use a ref to track what was spoken.
-
-    // Actually, let's use the hook's transcript to detect "noise".
-    // A better approach for "mistakes" without deep API hacking:
-    // If we have to reset the transcript, we count that as a "retry/mistake".
+    // Logic for Persistent Recognition
+    const [recognizedIndices, setRecognizedIndices] = useState(new Set());
 
     const { isListening, transcript, interimTranscript, startListening, stopListening, resetTranscript, isSoundDetected } = useSpeechRecognition('et-EE');
 
@@ -77,41 +73,37 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
 
     const handleTimeout = () => {
         // Timeout counts as a struggle/mistake
-        setMistakes(prev => [...prev, currentStepText]); // Log the phrase they failed on
+        setMistakes(prev => [...prev, currentStepText]);
         resetTranscript();
     };
 
-    // Clean up words for matching (lowercase, remove punctuation)
-    const normalize = (text) => text.toLowerCase().replace(/[.,?!]/g, '');
-
     const currentStepWords = currentStepText.split(' ');
 
-    // Check which words in the current step have been spoken
-    const spokenWords = normalize(transcript + ' ' + interimTranscript).split(/\s+/);
+    // Listen to transcript updates and persist recognized words
+    useEffect(() => {
+        const spokenWords = normalize(transcript + ' ' + interimTranscript).split(/\s+/);
 
-    // We match words in order, but allow retries/noise in between?
-    // Actually, for simplicity and "forgiveness", let's just check if the target word appears in the spoken words.
-    // But strictly, we want "Poiss" then "sööb".
-    // If we just check set inclusion, "Sööb poiss" would pass. That's probably okay for now, or we can improve later.
-    // Let's stick to simple inclusion for each word.
+        currentStepWords.forEach((word, index) => {
+            if (recognizedIndices.has(index)) return; // Already recognized
 
-    const isWordRecognized = (word) => {
-        return spokenWords.includes(normalize(word));
-    };
+            const normWord = normalize(word);
+            if (spokenWords.includes(normWord)) {
+                setRecognizedIndices(prev => new Set(prev).add(index));
+            }
+        });
+    }, [transcript, interimTranscript, currentStepText]); // Re-run when transcript changes
 
-    const matchedWordCount = currentStepWords.filter(w => isWordRecognized(w)).length;
-    const isStepComplete = matchedWordCount === currentStepWords.length;
+    // Check if step is complete using persisted set
+    const isStepComplete = currentStepWords.every((_, index) => recognizedIndices.has(index));
 
     useEffect(() => {
         if (isStepComplete) {
-            // Small delay before moving next or showing success
             const timer = setTimeout(() => {
                 if (currentStepIndex < exercise.steps.length - 1) {
-                    // Move to next step
-                    resetTranscript(); // Force re-reading of the full sentence
+                    resetTranscript();
+                    setRecognizedIndices(new Set()); // Clear for next step
                     setCurrentStepIndex(prev => prev + 1);
                 } else {
-                    // Exercise complete
                     const end = Date.now();
                     setEndTime(end);
                     setIsFinished(true);
@@ -140,18 +132,11 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                 duration={endTime - startTime}
                 mistakes={mistakes}
                 onRetry={() => {
-                    // Full reset
                     setIsFinished(false);
                     setCurrentStepIndex(0);
                     setMistakes([]);
+                    setRecognizedIndices(new Set());
                     resetTranscript();
-                    // startTime is complicated since it's state initiated once.
-                    // Ideally we remount the component.
-                    // Let's call onBack() then immediately we'd need to re-select.
-                    // simpler: just reload page or let parent handle?
-                    // Let's just reset local state somewhat cleanly, but startTime won't reset easily without effect.
-                    // Actually, cleanest is to ask parent to unmount/remount.
-                    // But for now -> onBack() is safest to return to menu.
                     onBack();
                 }}
                 onHome={onBack}
@@ -160,9 +145,10 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
     }
 
     const progress = Math.round(((currentStepIndex) / exercise.steps.length) * 100);
+    const fontClass = fontType === 'hand' ? 'font-hand' : 'font-sans';
 
     return (
-        <div className="flex flex-col h-full bg-[#FFFDF5] text-slate-800 p-4 font-hand">
+        <div className={`flex flex-col h-full bg-[#FFFDF5] text-slate-800 p-4 ${fontClass}`}>
             {/* Header / Progress */}
             <div className="flex justify-between items-center mb-6">
                 <button onClick={onBack} className="text-slate-400 hover:text-slate-600">
@@ -187,13 +173,16 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                             className={`text-center transition-all duration-500 ease-in-out px-4 w-full max-w-2xl
                     ${isActive ? 'scale-100 opacity-100 my-4' : 'scale-95 opacity-50 hidden sm:block'}
                   `}
-                        // Note: Added 'hidden sm:block' to past items on mobile to save vertical space? 
-                        // User liked the "Pyramid" effect. Let's keep them but make them smaller/tighter.
-                        // Actually, to prevent "cutting", let's just ensure nice wrapping.
                         >
                             <div className="inline-block leading-relaxed tracking-wide">
                                 {words.map((word, wIndex) => {
-                                    const isRecognized = isActive ? isWordRecognized(word) : false;
+                                    // Logic for coloring:
+                                    // Past steps: All green
+                                    // Active step: Check persistent indices
+
+                                    let isGreen = false;
+                                    if (isPast) isGreen = true;
+                                    if (isActive && recognizedIndices.has(wIndex)) isGreen = true;
 
                                     return (
                                         <span
@@ -203,9 +192,8 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                                                 transition-colors duration-300
                                                 /* Responsive Font Sizes - Fluid */
                                                 text-[clamp(1.5rem,5vw,3rem)]
-                                                ${isPast ? 'text-green-600' : ''}
-                                                ${isActive && isRecognized ? 'text-green-600' : ''}
-                                                ${isActive && !isRecognized ? 'text-slate-800' : ''}
+                                                ${isGreen ? 'text-green-600' : ''}
+                                                ${!isGreen && isActive ? 'text-slate-800' : ''}
                                                 ${!isActive && !isPast ? 'text-slate-400' : ''}
                                             `}
                                         >
@@ -229,8 +217,6 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                         onExpire={handleTimeout}
                         difficulty={difficulty}
                     />
-
-                    {/* Hidden debug state, logic remains for stats tracking if we wanted */}
                 </div>
 
                 <div className="flex gap-6 items-center justify-center mt-4">
@@ -259,6 +245,7 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                         onClick={() => {
                             setCurrentStepIndex(prev => Math.min(prev + 1, exercise.steps.length - 1));
                             resetTranscript();
+                            setRecognizedIndices(new Set()); // Ensure clean manual reset
                         }}
                         className="p-4 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
                         aria-label="Järgmine"
