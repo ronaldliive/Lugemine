@@ -184,26 +184,25 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                     return (
                         <div
                             key={index}
-                            className={`text-center transition-all duration-500 ease-in-out px-2
-                    ${isActive ? 'scale-110 opacity-100 my-4' : 'scale-100 opacity-60'}
+                            className={`text-center transition-all duration-500 ease-in-out px-4 w-full max-w-2xl
+                    ${isActive ? 'scale-100 opacity-100 my-4' : 'scale-95 opacity-50 hidden sm:block'}
                   `}
+                        // Note: Added 'hidden sm:block' to past items on mobile to save vertical space? 
+                        // User liked the "Pyramid" effect. Let's keep them but make them smaller/tighter.
+                        // Actually, to prevent "cutting", let's just ensure nice wrapping.
                         >
-                            <div className="flex flex-wrap justify-center gap-x-2 gap-y-1">
+                            <div className="inline-block leading-relaxed tracking-wide">
                                 {words.map((word, wIndex) => {
                                     const isRecognized = isActive ? isWordRecognized(word) : false;
-
-                                    // Responsive font size logic:
-                                    // Base: text-3xl
-                                    // Active: text-4xl or 5xl depending on length?
-                                    // Let's use a fluid size but cap it for small screens.
 
                                     return (
                                         <span
                                             key={wIndex}
                                             className={`
+                                                inline-block mr-2 last:mr-0 mb-1
                                                 transition-colors duration-300
-                                                /* Responsive Font Sizes */
-                                                text-3xl sm:text-5xl md:text-6xl
+                                                /* Responsive Font Sizes - Fluid */
+                                                text-[clamp(1.5rem,5vw,3rem)]
                                                 ${isPast ? 'text-green-600' : ''}
                                                 ${isActive && isRecognized ? 'text-green-600' : ''}
                                                 ${isActive && !isRecognized ? 'text-slate-800' : ''}
