@@ -78,6 +78,31 @@ function App() {
 
       {/* Main Action - Play Button */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md gap-8 mb-12">
+
+        {/* Font Selection Toggle */}
+        <div className="bg-white p-1.5 rounded-2xl shadow-sm border border-slate-100 flex gap-1 w-full max-w-xs">
+          <button
+            onClick={() => setFontType('hand')}
+            className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2
+                    ${fontType === 'hand'
+                ? 'bg-green-100 text-green-700 shadow-sm'
+                : 'text-slate-400 hover:bg-slate-50'
+              }`}
+          >
+            <span className="font-hand text-lg">Kirjatehnika</span>
+          </button>
+          <button
+            onClick={() => setFontType('sans')}
+            className={`flex-1 py-3 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2
+                    ${fontType === 'sans'
+                ? 'bg-blue-100 text-blue-700 shadow-sm'
+                : 'text-slate-400 hover:bg-slate-50'
+              }`}
+          >
+            <span className="font-sans text-lg">Trükitähed</span>
+          </button>
+        </div>
+
         <button
           onClick={startRandomExercise}
           className="w-full py-6 bg-green-500 rounded-3xl shadow-xl shadow-green-200 text-white font-bold text-2xl
