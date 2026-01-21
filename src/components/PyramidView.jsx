@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { Mic, MicOff, RefreshCw, ChevronRight, CheckCircle2, ChevronLeft, Star, Clock } from 'lucide-react';
 import { ResultsView } from './ResultsView';
@@ -49,6 +49,7 @@ const normalize = (text) => text.toLowerCase().replace(/[.,?!]/g, '');
 export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit', fontType = 'hand' }) => {
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
     const [isFinished, setIsFinished] = useState(false);
+    const finishedRef = useRef(false); // Ref to prevent double-execution of finish logic
 
     // Stats
     const [startTime] = useState(Date.now());
@@ -152,14 +153,19 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
     const isStepComplete = currentStepWords.every((_, index) => recognizedIndices.has(index));
 
     useEffect(() => {
-        if (isStepComplete) {
+        if (isStepComplete && !finishedRef.current) {
             const timer = setTimeout(() => {
+                // If we are already finished (by another trigger), do nothing
+                if (finishedRef.current) return;
+
                 if (currentStepIndex < exercise.steps.length - 1) {
                     resetTranscript();
                     setRecognizedIndices(new Set());
                     setErrorIndex(null);
                     setCurrentStepIndex(prev => prev + 1);
                 } else {
+                    // Exercise complete
+                    finishedRef.current = true; // Mark as finished immediately
                     const end = Date.now();
                     setEndTime(end);
                     setIsFinished(true);
@@ -188,6 +194,7 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                 duration={endTime - startTime}
                 mistakes={mistakes}
                 onRetry={() => {
+                    finishedRef.current = false;
                     setIsFinished(false);
                     setCurrentStepIndex(0);
                     setMistakes([]);
