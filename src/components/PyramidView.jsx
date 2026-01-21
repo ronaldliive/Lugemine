@@ -201,9 +201,10 @@ export const PyramidView = ({ exercise, onComplete, onBack, difficulty = 'rabbit
                     setRecognizedIndices(new Set());
                     setErrorIndex(null);
                     resetTranscript();
-                    onBack();
+                    // Removing onBack() call to stay in PyramidView.
                 }}
                 onHome={onBack}
+                onNext={onComplete} // We will use onComplete prop to signal "Next Exercise request"
             />
         );
     }

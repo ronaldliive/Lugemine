@@ -1,7 +1,7 @@
 import React from 'react';
 import { Clock, AlertCircle, RotateCcw, Home, Star } from 'lucide-react';
 
-export const ResultsView = ({ duration, mistakes, onRetry, onHome }) => {
+export const ResultsView = ({ duration, mistakes, onRetry, onHome, onNext }) => {
     // Format duration (ms to mm:ss)
     const formatTime = (ms) => {
         const totalSeconds = Math.floor(ms / 1000);
@@ -50,21 +50,31 @@ export const ResultsView = ({ duration, mistakes, onRetry, onHome }) => {
                     </div>
                 )}
 
-                <div className="flex gap-4 w-full">
+                <div className="flex flex-col gap-3 w-full">
                     <button
-                        onClick={onHome}
-                        className="flex-1 py-4 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                        onClick={onNext}
+                        className="w-full py-4 rounded-xl font-bold bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-200 transition-all flex items-center justify-center gap-2 animate-bounce-subtle"
                     >
-                        <Home size={20} />
-                        Menüü
+                        <span className="text-xl">Edasi</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                     </button>
-                    <button
-                        onClick={onRetry}
-                        className="flex-1 py-4 rounded-xl font-bold bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-200 transition-all flex items-center justify-center gap-2"
-                    >
-                        <RotateCcw size={20} />
-                        Uuesti
-                    </button>
+
+                    <div className="flex gap-3 w-full">
+                        <button
+                            onClick={onHome}
+                            className="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Home size={20} />
+                            Menüü
+                        </button>
+                        <button
+                            onClick={onRetry}
+                            className="flex-1 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-colors flex items-center justify-center gap-2"
+                        >
+                            <RotateCcw size={20} />
+                            Uuesti
+                        </button>
+                    </div>
                 </div>
 
             </div>
