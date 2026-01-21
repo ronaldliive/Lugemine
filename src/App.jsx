@@ -24,6 +24,7 @@ function App() {
     return (
       <div className="h-screen w-full bg-[#FFFDF5]">
         <PyramidView
+          key={currentExercise.id}
           exercise={currentExercise}
           onBack={() => setCurrentExercise(null)}
           onComplete={startRandomExercise} // Triggers next random exercise
